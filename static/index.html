@@ -77,7 +77,11 @@
 
         updateThings();
 
-        setInterval(updateThings, 10000)
+        setInterval(() => {
+            if (document.hasFocus()) {
+                updateThings();
+            }
+        }, 10000)
     </script>
 </body>
 
