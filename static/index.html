@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Chart</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.bundle.min.js"
+        integrity="sha512-SuxO9djzjML6b9w9/I07IWnLnQhgyYVSpHZx0JV97kGBfTIsUYlWflyuW4ypnvhBrslz1yJ3R+S14fdCWmSmSA=="
+        crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+        crossorigin="anonymous"></script>
+
+    <style>
+        .container {
+            margin-top: 1vh;
+            position: relative !important;
+            height: 40vh !important;
+            width: 80vw !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-10">
+                <div class="alert alert-primary" role="alert" id="tempBox">
+                    Current temperature: Loading...
+                </div>
+            </div>
+            <div class="col-2">
+                <button type="button" class="btn btn-primary" onclick="updateThings()">Update</button>
+            </div>
+        </div>
+
+        <canvas id="myChart"></canvas>
+    </div>
+    <script defer>
+        const updateThings = () => {
+            axios.get("/now").then((res) => {
+                const temp = res.data.formatted;
+
+                document.getElementById("tempBox").innerText = `Current temperature: ${temp}`
+            })
+
+            axios.get('/data').then((res) => {
+                const data = res.data.slice(Math.max(res.data.length - 20, 1));
+                const dates = data.map(d => d.date)
+                const temps = data.map(d => d.temperature)
+
+                var ctx = document.getElementById('myChart').getContext('2d');
+                var myChart = new Chart(ctx, {
+                    responsive: true,
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Temperature',
+                            data: temps,
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            xAxes: [{
+                                type: 'time',
+                            }]
+                        }
+                    }
+                });
+            })
+        }
+
+        updateThings();
+
+        setInterval(updateThings, 10000)
+    </script>
+</body>
+
+</html>
